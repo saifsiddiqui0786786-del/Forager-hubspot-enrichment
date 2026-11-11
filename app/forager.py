@@ -85,7 +85,11 @@ class ForagerClient:
         option_name, _, option_domain = (option.get("text") or "").rpartition(" - ")
         domain_root = domain.split(".")[0] if domain else ""
         score = 0
-        if domain and option_domain.strip().lower() == domain.lower():
+        if domain:
+            # A known domain must match exactly. A similar name on another
+            # domain ("Deploy" on deploy.com.pk for deploy.co) is a different company.
+            if option_domain.strip().lower() != domain.lower():
+                return 0
             score += 2
         if normalise(option_name) in {normalise(name), normalise(domain_root)} - {""}:
             score += 2

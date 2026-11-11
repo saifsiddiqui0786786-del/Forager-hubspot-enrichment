@@ -102,3 +102,11 @@ def test_first_email_handles_both_shapes():
     assert ForagerClient._first_email([{"email": "a@x.com", "validation_status": "valid"}]) == "a@x.com"
     assert ForagerClient._first_email([["a@x.com", "invalid"], ["b@x.com", "valid"]]) == "b@x.com"
     assert ForagerClient._first_email([]) == ""
+
+
+def test_match_score_requires_exact_domain():
+    score = ForagerClient._match_score
+    assert score({"text": "OpenAI - openai.com"}, "openai.com", "OpenAI") == 4
+    assert score({"text": "ChatGPT - openai.com"}, "openai.com", "OpenAI") == 2
+    assert score({"text": "Deploy - deploy.com.pk"}, "deploy.co", "") == 0
+    assert score({"text": "OpenAI - openai.com"}, "", "OpenAI") == 2
