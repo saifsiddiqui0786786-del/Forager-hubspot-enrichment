@@ -247,7 +247,13 @@ class EnrichmentService:
 
         existing_contacts = self._hubspot.company_contact_ids(company_id)
         if existing_contacts:
-            enriched = sum(self.enrich_contact(cid, org_id) for cid in existing_contacts)
+            # Contacts that were enriched before (for example by the contact
+            # webhook a moment ago) are left alone, so no credit is spent twice.
+            enriched = 0
+            for contact_id in existing_contacts:
+                contact = self._hubspot.get_contact(contact_id)
+                if not contact["properties"].get("forager_enriched_at"):
+                    enriched += self.enrich_contact(contact_id, org_id)
             return {"company_enriched": bool(org), "contacts_enriched": enriched}
 
         if not org:
